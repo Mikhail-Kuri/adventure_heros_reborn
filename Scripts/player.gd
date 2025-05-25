@@ -20,16 +20,18 @@ var is_aiming := false
 @onready var head = $Head
 @onready var camera = $Head/Camera3D
 @onready var skin : Node3D = $Mage
+@onready var crossHair :Control = %crosshair
 
 @onready var anim_player: AnimationPlayer = skin.get_node("AnimationPlayer")
 
 func _ready():
 	anim_player.animation_finished.connect(_on_animation_finished)
+	crossHair.visible = false
 
 
 
 func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("right_click"):
+	if event.is_action_pressed("right_click") and is_on_floor():
 		is_aiming = true
 		_start_aiming()
 	elif event.is_action_released("right_click"):
@@ -73,21 +75,30 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("ui_accept") and is_on_floor():
 		velocity.y = JUMP_VELOCITY
 
-	# Déplacement
+	# Déplacement (interdit pendant attaque melee)
+	var can_move = not is_attacking
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var direction : Vector3 = (head.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	var current_speed = RUN_SPEED if Input.is_action_pressed("run") else SPEED
+	
+	if is_aiming and not is_on_floor():
+		is_aiming = false
 
-	if direction:
-		velocity.x = direction.x * current_speed
-		velocity.z = direction.z * current_speed
-		_last_movement_direction = direction
-	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
-		velocity.z = move_toward(velocity.z, 0, SPEED)
+	if can_move:
+		if direction:
+			velocity.x = direction.x * current_speed
+			velocity.z = direction.z * current_speed
+			_last_movement_direction = direction
+		else:
+			velocity.x = move_toward(velocity.x, 0, SPEED)
+			velocity.z = move_toward(velocity.z, 0, SPEED)
 
 	# Déplacement physique
-	move_and_slide()
+	if not is_attacking or (is_attacking and is_aiming):
+		move_and_slide()
+
+
+	# Rotation du skin vers la direction du mouvement
 	if is_aiming:
 		var camera_dir = -camera.global_transform.basis.z
 		camera_dir.y = 0
@@ -95,13 +106,14 @@ func _physics_process(delta: float) -> void:
 		_last_movement_direction = camera_dir
 		var target_angle = Vector3.BACK.signed_angle_to(camera_dir, Vector3.UP)
 		skin.global_rotation.y = lerp_angle(skin.rotation.y, target_angle, rotation_speed * delta)
-	# Rotation du skin vers la direction du mouvement
+		crossHair.visible = true
 	else:
-		var targer_angle := Vector3.BACK.signed_angle_to(_last_movement_direction, Vector3.UP)
-		skin.global_rotation.y = lerp_angle(skin.rotation.y, targer_angle, rotation_speed * delta)
-		
-	if not is_attacking:
-	# Animation
+		var target_angle = Vector3.BACK.signed_angle_to(_last_movement_direction, Vector3.UP)
+		skin.global_rotation.y = lerp_angle(skin.rotation.y, target_angle, rotation_speed * delta)
+		crossHair.visible = false
+
+	# Animation (seulement quand pas en attaque ou visée)
+	if not is_attacking and not is_aiming:
 		var is_currently_in_air = not is_on_floor()
 
 		if is_currently_in_air:
@@ -118,17 +130,18 @@ func _physics_process(delta: float) -> void:
 				var is_running = Input.is_action_pressed("run")
 				anim_player.play("Running_A" if is_running else "Walking_A")
 
-		# Mémoriser si on était en l'air pour détecter l'atterrissage
 		was_in_air = is_currently_in_air
+
 	# Zoom automatique selon visée
 	var target_fov = zoom_min_fov if is_aiming else zoom_max_fov
 	camera.fov = lerp(camera.fov, target_fov, delta * zoom_speed)
+
 
 	
 	
 	
 func _perform_attack():
-	if is_attacking:
+	if is_attacking or not is_on_floor():
 		return
 
 	is_attacking = true
@@ -143,6 +156,7 @@ func _perform_attack():
 		]
 		var selected_attack = melee_attacks[randi() % melee_attacks.size()]
 		anim_player.play(selected_attack)
+
 		
 func _start_aiming():
 	if not is_attacking:

@@ -36,6 +36,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.17301, 0)
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="crosshair" type="Control" parent="CanvasLayer"]
+unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
