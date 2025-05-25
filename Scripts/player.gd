@@ -3,7 +3,7 @@ extends CharacterBody3D
 
 @export_group("Camera")
 @export_range(0.0,1.0) var mouse_sensitivity := 0.003
-@export_range(30.0, 100.0) var zoom_min_fov := 30.0
+@export_range(30.0, 100.0) var zoom_min_fov := 60.0
 @export_range(30.0, 100.0) var zoom_max_fov := 90.0
 @export_range(1.0, 10.0) var zoom_speed := 5.0
 
@@ -92,6 +92,7 @@ func _physics_process(delta: float) -> void:
 		var camera_dir = -camera.global_transform.basis.z
 		camera_dir.y = 0
 		camera_dir = camera_dir.normalized()
+		_last_movement_direction = camera_dir
 		var target_angle = Vector3.BACK.signed_angle_to(camera_dir, Vector3.UP)
 		skin.global_rotation.y = lerp_angle(skin.rotation.y, target_angle, rotation_speed * delta)
 	# Rotation du skin vers la direction du mouvement
@@ -119,6 +120,10 @@ func _physics_process(delta: float) -> void:
 
 		# Mémoriser si on était en l'air pour détecter l'atterrissage
 		was_in_air = is_currently_in_air
+	# Zoom automatique selon visée
+	var target_fov = zoom_min_fov if is_aiming else zoom_max_fov
+	camera.fov = lerp(camera.fov, target_fov, delta * zoom_speed)
+
 	
 	
 	

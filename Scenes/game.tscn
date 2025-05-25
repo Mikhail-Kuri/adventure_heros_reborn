@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://jkha67chu27a"]
 
-[ext_resource type="PackedScene" uid="uid://2egylduvlfv6" path="res://Scenes/player.tscn" id="1_ebmjs"]
+[ext_resource type="PackedScene" uid="uid://2egylduvlfv6" path="res://Scenes/mage_character.tscn" id="1_ebmjs"]
 [ext_resource type="Texture2D" uid="uid://ns4dboet1syi" path="res://Assets/crosshair/crosshair002.png" id="2_qxrlw"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_mwb40"]
