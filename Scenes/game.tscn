@@ -30,8 +30,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.02631, 0, -6.17676)
 use_collision = true
 size = Vector3(19.0745, 0.002, 38.333)
 
-[node name="CharacterBody3D" parent="." instance=ExtResource("1_ebmjs")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.17301, 0)
+[node name="Mage_Player" parent="." instance=ExtResource("1_ebmjs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.61732, 0)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
